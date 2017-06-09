@@ -16,4 +16,20 @@ Integrating data mining techniques and RFM analysis provides very useful informa
 Decision trees which are built on customer's demographic information and RFM clusters are very crucial to predict the new customer's behaviours like the probability of purchases and how often the customer will purchase and what is the value of the purchases.
 
 Finally, the following sections are divided as the following, section 1 introduces the data set and some explorations techniques used to understand the data, section 2 is about calculating RFM scores and segments and prepare the dataset for data mining algorithms, section 3 presents customer segmentation based on RFM using DBscan, section 4  shows how to predict new customers type based on RFM values using decision trees and random forest and it will depend on ad boost to determine the   importance of the customer's demographic variables which are used to build the prediction, section 5 provides the basis of basket analysis for a specific customer segments which allow understanding the behaviors of existing customers, and finally conclusion to summarize the result and the findings.
-4
+
+## Section 1:  Data Exploration
+The dataset which will be used in RFM analysis and data mining is a transactional dataset for Chinese retail clothing company. It consists of 34 variables and 2360 observation . **READXL** library is required to load the data into the memory as it's in excel file. The following R code is to load the data set into the memory and explore the dimensions, variables names and types
+
+```R
+#install.packages("readxl",dependencies = TRUE,repos = "http://cran.us.r-project.org")
+library("readxl")
+ds <- read_excel("sales.xls")
+#Explore dimensions 
+dim(ds)
+#Explore variable s' name
+names(ds)
+#Explore variables data types 
+sapply(ds,class)
+#First Row of the data set
+head(ds, n=1)
+```
