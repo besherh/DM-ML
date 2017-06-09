@@ -18,7 +18,7 @@ Decision trees which are built on customer's demographic information and RFM clu
 Finally, the following sections are divided as the following, section 1 introduces the data set and some explorations techniques used to understand the data, section 2 is about calculating RFM scores and segments and prepare the dataset for data mining algorithms, section 3 presents customer segmentation based on RFM using DBscan, section 4  shows how to predict new customers type based on RFM values using decision trees and random forest and it will depend on ad boost to determine the   importance of the customer's demographic variables which are used to build the prediction, section 5 provides the basis of basket analysis for a specific customer segments which allow understanding the behaviors of existing customers, and finally conclusion to summarize the result and the findings.
 
 ## Section 1:  Data Exploration
-The dataset which will be used in RFM analysis and data mining is a transactional dataset for Chinese retail clothing company. It consists of 34 variables and 2360 observation . **READXL** library is required to load the data into the memory as it's in excel file. The following R code is to load the data set into the memory and explore the dimensions, variables names and types
+The dataset which will be used for this analysis is a transactional dataset for Chinese retail clothing company. It consists of 34 variables and 2360 observation . **READXL** library is required to load the data into the memory as it's in excel file. The following R code is to load the data set into the memory and explore the dimensions, variables names and types
 
 ```R
 #install.packages("readxl",dependencies = TRUE,repos = "http://cran.us.r-project.org")
@@ -33,3 +33,16 @@ sapply(ds,class)
 #First Row of the data set
 head(ds, n=1)
 ```
+The variables have a different types(Numeric, Characters, POSIXct) and their names are self-exploratory except GP (Gross Profit) and COS (Cost of sales), there are no issues with the observations (NAs, invalid values, duplication, etc.), so there will no need for cleaning phase.
+
+Now Let us now turn to the second phase of the exploration, 4 different types of charts will be presented to understand the trends and the nature of the data.
+**Note:**For the analysis purposes, not all the variables will be included in this study for instance: RFM focuses only on [recency (Order date), frequency (Order Number), monetary (GP)], basket analysis focuses on transactions (OrderID) and products (Product Name), and customer segmentations will focus on the demographic information of the customers like education, income level and marital status.
+### 1.  Sales By Gender:
+To find the total sales by gender, a temporary data frame will be created using an aggregate function. The aggregate function will accumulate all GP (Gross profit) values for Males and Females separately then this data frame will be the input for barplot function.
+```R
+#salesby gender
+GP_Gender <- aggregate(GP ~ Gender, ds, FUN=sum) 
+barplot(height = GP_Gender$GP,names.arg = GP_Gender$Gender, col = c("mistyrose","lightblue" ),xlab = "Sales by gender")
+```
+The plot shows that the females are the dominant gender in sales and most important customers to the company are females.
+### 1.  Sales By Gender:
