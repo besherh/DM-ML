@@ -1,0 +1,91 @@
+---
+title: "EDA- Departments"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+---
+
+```{r setup, include=FALSE}
+#library initialization
+
+library(flexdashboard)
+library(sparklyr)
+library(dplyr)
+library(ggplot2)
+library(replyr) #Working With R and Big Data: Use Replyr for remote data as spark
+library(stringr) # for string operations
+library(wordcloud) # for wordcloud chart
+library(portfolio) # for map market treemap
+library("treemap") # for treemap chart
+
+######### Connecting to Spark ###################
+
+config <- spark_config()
+Sys.setenv(SPARK_HOME = "/home/rstudio-user/spark/spark-2.0.2-bin-hadoop2.7")
+config[["spark.sql.hive.thriftServer.singleSession"]] <- "true"
+sc <- spark_connect(master = "local", config = config)
+############## data prepeation #########################
+
+departments_orders_summary_tbl <- tbl(sc,"departments_orders")
+departments_orders_summary <- collect(departments_orders_summary_tbl )
+
+departments_orders_Aisles_summary_tbl <- tbl(sc,"departments_orders_aisles")
+departments_orders_Aisles_summary <- collect(departments_orders_Aisles_summary_tbl)
+
+```
+
+Column {data-width=550}
+-----------------------------------------------------------------------
+
+### Top 10 Products
+
+```{r}
+tmp <- departments_orders_Aisles_summary %>% group_by(department) %>% summarise(count=n())
+dotchart(tmp$count,labels=tmp$department,cex=.7,
+         main="Departments size", 
+         xlab="aislecount")
+
+```
+
+### Top selling departments
+
+```{r}
+#Top selling departments (word size = total number of orders)
+
+set.seed(3548)
+wordcloud(words = departments_orders_summary$department, freq = departments_orders_summary$Orders_Count, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(5, "Dark2"))
+
+```
+
+### Departments by aisles size
+
+```{r}
+# departments by aisles size
+map.market(id=tmp$department, 
+           area=tmp$count, 
+           group=tmp$department, 
+           color=tmp$count, 
+           main="Departments Map")
+```
+
+
+Column {data-width=450}
+-----------------------------------------------------------------------
+
+### Explore departmens and asiles according to orders count
+
+```{r}
+#Explore departmens and asiles according to orders count
+
+
+treemap(departments_orders_Aisles_summary,
+        index=c("department","aisle"),
+        vSize="Orders_Count",
+        vColor="department",
+        palette="Set2",
+        border.col="#FFFFFF",
+        bg.labels = "#FFFFFF"
+)
+```
