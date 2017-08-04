@@ -37,7 +37,7 @@ departments_orders_Aisles_summary <- collect(departments_orders_Aisles_summary_t
 Column {data-width=550}
 -----------------------------------------------------------------------
 
-### Top 10 Products
+### Top 10 Departments
 
 ```{r}
 tmp <- departments_orders_Aisles_summary %>% group_by(department) %>% summarise(count=n())
@@ -46,6 +46,7 @@ dotchart(tmp$count,labels=tmp$department,cex=.7,
          xlab="aislecount")
 
 ```
+![departmentsize](https://user-images.githubusercontent.com/5450393/28970283-e18e5cb6-791f-11e7-8f24-600ec2f772f4.png)
 
 ### Top selling departments
 
@@ -58,7 +59,7 @@ wordcloud(words = departments_orders_summary$department, freq = departments_orde
           colors=brewer.pal(5, "Dark2"))
 
 ```
-
+![wordcount](https://user-images.githubusercontent.com/5450393/28970284-e1a0985e-791f-11e7-86b9-74a4ce19b965.png)
 ### Departments by aisles size
 
 ```{r}
@@ -69,7 +70,7 @@ map.market(id=tmp$department,
            color=tmp$count, 
            main="Departments Map")
 ```
-
+![aislesize](https://user-images.githubusercontent.com/5450393/28970280-e1742c10-791f-11e7-8c6d-254cb6500371.png)
 
 Column {data-width=450}
 -----------------------------------------------------------------------
@@ -89,3 +90,4 @@ treemap(departments_orders_Aisles_summary,
         bg.labels = "#FFFFFF"
 )
 ```
+![departments](https://user-images.githubusercontent.com/5450393/28970282-e18e0aae-791f-11e7-8ebc-7fff9a677cb9.png)
