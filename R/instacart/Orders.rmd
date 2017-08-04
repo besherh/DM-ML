@@ -68,7 +68,7 @@ text(
 )
 
 ```
-
+![orders](https://user-images.githubusercontent.com/5450393/28970848-e22ce474-7921-11e7-8784-33f2ebd28907.png)
 Column {data-width=350}
 -----------------------------------------------------------------------
 
@@ -80,7 +80,7 @@ orders %>% ggplot(aes(x=order_hour_of_day)) +
   geom_histogram(stat="count",fill="pink")
 
 ```
-
+![peakhours](https://user-images.githubusercontent.com/5450393/28970698-66765630-7921-11e7-9ff1-51bcc3801dc2.png)
 ### Days since last order
 
 ```{r}
@@ -88,6 +88,7 @@ orders %>% filter( days_since_prior_order != -1) %>% ggplot(aes(x=days_since_pri
   geom_histogram(stat="count",fill="#801D15")
 
 ```
+![priororder](https://user-images.githubusercontent.com/5450393/28970696-667416fe-7921-11e7-8ded-3abff874eb25.png)
 
 ### Distibution of items in orders
 
@@ -102,7 +103,7 @@ total_order_items_tbl%>%
    
 
 ```
-
+![itemsperorder](https://user-images.githubusercontent.com/5450393/28970695-664ff77e-7921-11e7-8d79-7b97e07ba6f4.png)
 
 ### Sales during hours/week
 
@@ -118,3 +119,5 @@ ggplot(hour_by_day) + aes(order_hour_of_day,count,col = as.factor(order_day_name
   labs(colour = "Day of Week")
 
 ```
+![salesduringhours](https://user-images.githubusercontent.com/5450393/28970697-66755dfc-7921-11e7-906a-16dc598ac5c7.png)
+
