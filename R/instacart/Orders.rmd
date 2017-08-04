@@ -1,0 +1,120 @@
+---
+title: "EDA-Orders"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+#library initialization
+
+library(flexdashboard)
+library(sparklyr)
+library(dplyr)
+library(ggplot2)
+library(data.table) # using fread
+
+############# Load data sets ################3
+
+initial_path <- "./datasets"
+orders <- fread(file.path(initial_path, "orders.csv"))
+order_details <- fread(file.path(initial_path, "order_products_prior.csv"))
+
+
+#Create day name as a factor
+orders$order_day_name <-ifelse(
+  orders$order_dow == 0, "Sunday",ifelse 
+    (orders$order_dow == 1, "Monday", ifelse
+        (orders$order_dow == 2, "Tuesday",ifelse
+            (orders$order_dow == 3, "Wednesday",ifelse
+                (orders$order_dow == 4, "Thursday",ifelse
+                  (orders$order_dow == 5, "Friday",ifelse
+                      (orders$order_dow == 6, "Saturday","NA")
+                    )
+                )
+            )
+          )
+        )
+ )
+
+orders$order_day_name <- as.factor(orders[,orders$order_day_name])
+
+total_order_items_tbl <- order_details %>%  group_by(order_id) %>% 
+  summarize( total_items = last(add_to_cart_order))
+
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Orders distributions over days
+
+```{r}
+orders_distributions_plot <- barplot(
+  table(orders$order_day_name),
+  main = "Orders distribution by days",
+  xlab = "Day of a week",
+  ylab = "Total number of orders",
+  col="#50A162"
+)
+text(
+  x = orders_distributions_plot,
+  y = table(orders$order_day_name),
+  label = table(orders$order_day_name),
+  pos = 1,
+  cex = 0.8,
+  col = "white"
+)
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Peak hours
+
+```{r}
+#peak hours (top selling hours)
+orders %>% ggplot(aes(x=order_hour_of_day)) + 
+  geom_histogram(stat="count",fill="pink")
+
+```
+
+### Days since last order
+
+```{r}
+orders %>% filter( days_since_prior_order != -1) %>% ggplot(aes(x=days_since_prior_order),y=n) + 
+  geom_histogram(stat="count",fill="#801D15")
+
+```
+
+### Distibution of items in orders
+
+```{r}
+
+# Basket size- How many items in the basket
+total_order_items_tbl%>%
+  ggplot(aes(x=total_items)) + 
+  geom_histogram(stat="count",fill="#582A72") +
+  labs(title="Basket size") +
+  labs(x="total_items", y="Count") 
+   
+
+```
+
+
+### Sales during hours/week
+
+```{r}
+
+#peak hours 
+hour_by_day <- orders %>% 
+  select( order_hour_of_day,order_day_name) %>%
+  group_by( order_hour_of_day,order_day_name) %>%
+  summarise(count = n())
+ggplot(hour_by_day) + aes(order_hour_of_day,count,col = as.factor(order_day_name)) + geom_line() + 
+  ggtitle('Orders by Hour and Day') + labs(y= "Number of orders", x = "Hours") +
+  labs(colour = "Day of Week")
+
+```
