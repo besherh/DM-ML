@@ -1,0 +1,86 @@
+---
+title: "EDA-Products"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(sparklyr)
+library(dplyr)
+library(ggplot2)
+
+
+initial_path <- "./datasets"
+
+orders <- fread(file.path(initial_path, "orders.csv"))
+order_details <- fread(file.path(initial_path, "order_products_prior.csv"))
+products <- fread(file.path(initial_path, "products.csv"))
+
+
+#top products
+top10_products_tbl <- order_details %>% select (product_id,order_id)%>%
+  group_by(product_id) %>% 
+  summarize(count = n()) %>% top_n(10, wt = count) %>%
+  left_join(select(products,product_id,product_name,aisle_id),by="product_id") %>% 
+  left_join(aisles, by="aisle_id") %>% 
+  select(count,product_name,aisle)
+
+
+#top 10 items which added first into the basket
+first_basket_items_tbl <-  order_details %>% 
+  group_by(product_id, add_to_cart_order) %>% 
+  summarize(count = n()) %>% mutate(pct=count/sum(count)) %>% 
+  filter(add_to_cart_order == 1, count>10) %>% 
+  arrange(desc(pct)) %>% 
+  left_join(products,by="product_id") %>% 
+  select(product_name, pct, count) %>% 
+  ungroup() %>% 
+  top_n(10, wt=pct)
+
+tmp_product <- products
+tmp_product$product_source <- if_else(str_detect(str_to_lower(products$product_name),'organic'),"organic","non organic")
+product_source<- tmp_product %>% left_join(order_details,by="product_id")%>% group_by(product_source) %>% summarise(count =n()) %>% mutate (pct = count/sum(count)) %>% select(product_source,pct)
+
+
+
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Top 10 products
+
+```{r}
+
+ggplot(top10_products_tbl, aes(factor(product_name), count, fill = aisle)) + 
+  geom_bar(stat="identity", position = "dodge") + coord_flip()+
+  scale_fill_brewer(palette = "Set3") + ggtitle('Top 10 Products') + labs(y= "Number of orders", x = "Product Name") +
+  labs(colour = "Aile")
+```
+![top10products](https://user-images.githubusercontent.com/5450393/28970920-16108cbe-7922-11e7-97aa-4b13c23c4a81.png)
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Perecntage for first Items added to basket 
+
+```{r}
+
+
+first_basket_items_tbl %>%   ggplot(aes(x=reorder(product_name,-pct), y=pct))+
+  geom_bar(stat="identity",fill="#AA6C39")+
+  theme(axis.text.x=element_text(angle=90, hjust=1),axis.title.x = element_blank())
+
+```
+![firstbasketitems](https://user-images.githubusercontent.com/5450393/28970918-15f2490c-7922-11e7-8233-47beaf835deb.png)
+### Organic vs non organic
+
+```{r}
+product_source %>% ggplot(aes(x=product_source,y=pct, fill=pct))+
+  geom_bar(stat="identity")
+
+```
+![organicvsnon](https://user-images.githubusercontent.com/5450393/28970919-160b3a70-7922-11e7-9cf0-368b61434c11.png)
+
