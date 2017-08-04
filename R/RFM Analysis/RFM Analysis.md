@@ -40,3 +40,6 @@ barplot(height = GP_Gender$GP,names.arg = GP_Gender$Gender, col = c("mistyrose",
 ```
 The plot shows that the females are the dominant gender in sales and most important customers to the company are females.
 ### 1.  Sales By Gender:
+
+
+To be continued
