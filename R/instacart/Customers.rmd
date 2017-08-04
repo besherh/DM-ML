@@ -1,0 +1,51 @@
+---
+title: "EDA- Customers"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(sparklyr)
+library(dplyr)
+library(ggplot2)
+
+
+######### Connecting to Spark ###################
+
+config <- spark_config()
+Sys.setenv(SPARK_HOME = "/home/rstudio-user/spark/spark-2.0.2-bin-hadoop2.7")
+config[["spark.sql.hive.thriftServer.singleSession"]] <- "true"
+sc <- spark_connect(master = "local", config = config)
+############## data prepeation #########################
+
+clustering_tbl <- tbl(sc,"customers_clustering")
+clustering <- collect (clustering_tbl)
+clustering$Fsegment <- findInterval(clustering$orders_no, quantile(clustering$orders_no, c(0.0, 0.25, 0.50, 0.75, 1.0)))
+clustering$Rsegment <- findInterval(clustering$avg_days_prior_order, quantile(clustering$avg_days_prior_order, c(0.0, 0.25, 0.50, 0.75, 1.0)))
+RFscore <- clustering$Rsegment + clustering$Fsegment * 10
+RFClustering <- cbind(clustering,RFscore)
+
+
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Customer distibution by Recency, Frequency
+
+```{r}
+ggplot(RFClustering, aes(factor(RFscore))) +
+  geom_bar(fill = "#D4C06A") +
+  ggtitle('Customer Distribution by RF') +
+  labs(x="RF",y="# Customers") + 
+  theme(plot.title = element_text(color="#AA9439", face="bold", size=16, hjust=0)) +
+  theme(axis.title = element_text(color="#FFEFAA", face="bold"))
+
+```
+![customers](https://user-images.githubusercontent.com/5450393/28970978-4ff70c00-7922-11e7-8b07-a7cc9fbcc8cf.png)
+
+
+
